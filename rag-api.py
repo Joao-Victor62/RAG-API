@@ -1,7 +1,7 @@
 import os
 import time
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import create_retrieval_chain
 from langchain.vectorstores import Chroma
@@ -41,14 +41,14 @@ def set_rag():
         #Chunking
         print("[2/5] - Realizando chunking do documento...")
         start_time = time.time()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=250)
         splits = text_splitter.split_documents(docs)
         print(f"         {time.time()-start_time}s.")
 
         #Criar vetores e salvar no bd
         print("[3/5] - Criando banco de dados vetorial (Pode demorar um pouco)...")
         start_time = time.time()
-        model_name = "sentence-transformers/all-MiniLM-L6-v2"
+        model_name = "sentence-transformers/multi-qa-mpnet-base-dot-v1"
         model_kwargs = {'device': 'cpu'} # Use 'cuda' se tiver uma GPU compatível
         encode_kwargs = {'normalize_embeddings': False}
         embeddings = HuggingFaceEmbeddings(
@@ -57,13 +57,13 @@ def set_rag():
         encode_kwargs=encode_kwargs
 )
         vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
-        retriever = vectorstore.as_retriever()
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
         print(f"         {time.time()-start_time}s.")
 
         #Config llm e prompt
         print("[4/5] - Configurando llm...")
         start_time = time.time()
-        llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro")
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
         prompt = ChatPromptTemplate.from_template("""
         Responda à pergunta do usuário baseando-se somente no contexto fornecido. Ao mencionar o contexto, diga a fonte.
         Se a informação não estiver no contexto, diga "Não tenho informações sobre isso no meu contexto".
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         print(f"\n(Resposta gerada em {end_time - start_time:.2f} segundos)")
 
         
-        #print("\n--- CONTEXTO UTILIZADO ---")
-        #for i, doc in enumerate(response["context"]):
-        #        print(f"\n[Trecho {i+1}]")
-        #        print(doc.page_content)
+        print("\n--- CONTEXTO UTILIZADO ---")
+        for i, doc in enumerate(response["context"]):
+               print(f"\n[Trecho {i+1}]")
+               print(doc.page_content)
