@@ -9,9 +9,10 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.documents import Document
 from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.document_loaders import PyPDFLoader
 
 def set_rag():
-        os.environ["GOOGLE_API_KEY"] = "AIzaSyCzUscBcxKVwSRqZdwXBZ8DlrEFKPPKcfE"
+        os.environ["GOOGLE_API_KEY"] = ""
         if not os.environ.get("GOOGLE_API_KEY"):
                 print("ERRO: A chave de API do Google não foi configurada.")
                 return None
@@ -19,21 +20,12 @@ def set_rag():
         # Fonte de dados
         print("[1/5] - Carregando documento web...")
         start_time = time.time()#
+        
+        pdfpath = "bd.pdf"
+        loader = PyPDFLoader(pdfpath)
 
-        #texto_exemplo = """
-        #        O ciclo da água, também conhecido como ciclo hidrológico, é o processo contínuo de movimento da água na Terra. Este ciclo é fundamental para a existência da vida no planeta, pois garante a distribuição de água potável, regula o clima e modela a paisagem. A água existe em três estados principais durante o ciclo: líquido, gasoso (vapor) e sólido (gelo).
+        #loader = WebBaseLoader("https://pt.wikipedia.org/wiki/Fósforo")
 
-        #        A primeira grande fase é a evaporação. O calor do sol aquece a água de rios, lagos e oceanos, transformando-a em vapor. Esse vapor de água sobe para a atmosfera. As plantas também liberam vapor de água através de um processo chamado transpiração, contribuindo para a umidade do ar.
-
-        #        Quando o vapor de água atinge altitudes mais elevadas na atmosfera, ele esfria e se transforma de volta em pequenas gotículas de água líquida ou cristais de gelo. Esse processo é chamado de condensação. Essas gotículas se agrupam e formam as nuvens que vemos no céu.
-
-        #        Finalmente, ocorre a precipitação. Quando as gotículas de água nas nuvens se tornam grandes e pesadas o suficiente, elas caem de volta para a superfície da Terra na forma de chuva, neve ou granizo. A água que cai é coletada em rios, lagos e oceanos, ou se infiltra no solo, recomeçando o ciclo hidrológico.
-        #        """
-
-        #docs = [Document(page_content=texto_exemplo)]
-
-
-        loader = WebBaseLoader("https://pt.wikipedia.org/wiki/Fósforo")
         docs = loader.load()
         
         print(f"         {time.time()-start_time}s.")
